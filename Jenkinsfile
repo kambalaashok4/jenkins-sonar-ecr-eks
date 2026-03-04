@@ -49,7 +49,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                    sonar-scanner \
+                    ${scannerHome}/bin/sonar-scanner \
                     -Dsonar.projectKey=django-app \
                     -Dsonar.sources=. \
                     -Dsonar.python.coverage.reportPaths=coverage.xml
