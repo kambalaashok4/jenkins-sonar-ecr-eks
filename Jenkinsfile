@@ -44,7 +44,7 @@ pipeline {
         }
 
         // ===============================
-        // 🔥 NEW STAGE - SONARQUBEasdfghgfdsasdfgpppppppppppppppppppppppp
+        // 🔥 NEW STAGE - SONARQUBEasdfghgfdsasdfgpppppppqwefrgdsadfppppppppppppppppp
         // ===============================
 
         stage('SonarQube Analysis') {
