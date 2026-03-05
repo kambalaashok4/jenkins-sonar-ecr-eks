@@ -1,27 +1,36 @@
 pipeline {
-    agent any
+
+    agent {
+        dockerfile {
+            filename 'Dockerfile'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+    }
 
     environment {
-        AWS_REGION = "us-east-1"
-        ECR_REPO = "865487342006.dkr.ecr.us-east-1.amazonaws.com/cicd"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        AWS_REGION    = "us-east-1"
+        ECR_REPO      = "865487342006.dkr.ecr.us-east-1.amazonaws.com/cicd"
+        IMAGE_TAG     = "${BUILD_NUMBER}"
         TERRAFORM_DIR = "terraform"
-        BRANCH_NAME="main"
-        }
+    }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/kambalaashok4/ci-cd-django-jenkins.git'
-
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                pip install --upgrade pip
+                python -m pip install --upgrade pip
                 pip install -r requirements.txt
                 pip install coverage
                 '''
@@ -30,7 +39,7 @@ pipeline {
 
         stage('Run Django Checks') {
             steps {
-                sh 'python3 manage.py check'
+                sh 'python manage.py check'
             }
         }
 
@@ -43,15 +52,11 @@ pipeline {
             }
         }
 
-        // ===============================
-        // 🔥 NEW STAGE - SONARQUBEasdfghgfdsasdfgpppppppqwefrgdsadfppppppppppppppppp
-        // ===============================
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                    /opt/sonar-scanner/bin/sonar-scanner \
+                    sonar-scanner \
                     -Dsonar.projectKey=django-app \
                     -Dsonar.sources=. \
                     -Dsonar.python.coverage.reportPaths=coverage.xml
@@ -67,10 +72,6 @@ pipeline {
                 }
             }
         }
-
-        // ===============================
-        // Docker + ECR (unchanged)
-        // ===============================
 
         stage('Build Docker Image') {
             steps {
@@ -96,9 +97,9 @@ pipeline {
             }
         }
 
-        stage('Trigger Deployment') {
+        stage('Terraform Deploy (Main Only)') {
             when {
-                 expression { env.BRANCH_NAME == 'main' }
+                branch 'main'
             }
             steps {
                 sh """
@@ -117,6 +118,12 @@ pipeline {
             docker rmi cicd:${IMAGE_TAG} ${ECR_REPO}:${IMAGE_TAG} || true
             docker system prune -af || true
             """
+        }
+        success {
+            echo "Pipeline completed successfully 🚀"
+        }
+        failure {
+            echo "Pipeline failed ❌ Check logs above."
         }
     }
 }
