@@ -20,3 +20,11 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Python byte-code cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django
+db.sqlite3
