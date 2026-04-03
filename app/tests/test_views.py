@@ -10,6 +10,8 @@ class LinkedinViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("linkedin")
+        # Cache the response so all tests reuse a single HTTP round-trip.
+        self.response = self.client.get(self.url)
 
     # ------------------------------------------------------------------
     # Status code
@@ -17,8 +19,7 @@ class LinkedinViewTests(TestCase):
 
     def test_get_returns_200(self):
         """A GET request to '/' should return HTTP 200 OK."""
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.response.status_code, 200)
 
     # ------------------------------------------------------------------
     # Template
@@ -26,8 +27,7 @@ class LinkedinViewTests(TestCase):
 
     def test_uses_correct_template(self):
         """The view should render profile/linkedin.html."""
-        response = self.client.get(self.url)
-        self.assertTemplateUsed(response, "profile/linkedin.html")
+        self.assertTemplateUsed(self.response, "profile/linkedin.html")
 
     # ------------------------------------------------------------------
     # Context variables
@@ -35,20 +35,17 @@ class LinkedinViewTests(TestCase):
 
     def test_context_contains_linkedin_url(self):
         """The template context must include the 'linkedin_url' key."""
-        response = self.client.get(self.url)
-        self.assertIn("linkedin_url", response.context)
+        self.assertIn("linkedin_url", self.response.context)
 
     def test_linkedin_url_is_non_empty_string(self):
-        """The linkedin_url context value should be a non-empty string."""
-        response = self.client.get(self.url)
-        linkedin_url = response.context["linkedin_url"]
+        """The linkedin_url context value should be a non-empty, non-whitespace string."""
+        linkedin_url = self.response.context["linkedin_url"]
         self.assertIsInstance(linkedin_url, str)
-        self.assertTrue(linkedin_url.strip())
+        self.assertGreater(len(linkedin_url.strip()), 0)
 
     def test_linkedin_url_is_valid_https_link(self):
         """The linkedin_url context value should start with 'https://'."""
-        response = self.client.get(self.url)
-        linkedin_url = response.context["linkedin_url"]
+        linkedin_url = self.response.context["linkedin_url"]
         self.assertTrue(linkedin_url.startswith("https://"))
 
     # ------------------------------------------------------------------
@@ -57,6 +54,5 @@ class LinkedinViewTests(TestCase):
 
     def test_response_contains_linkedin_url_in_body(self):
         """The rendered HTML should include the linkedin URL as a hyperlink."""
-        response = self.client.get(self.url)
-        linkedin_url = response.context["linkedin_url"]
-        self.assertContains(response, linkedin_url)
+        linkedin_url = self.response.context["linkedin_url"]
+        self.assertContains(self.response, linkedin_url)
