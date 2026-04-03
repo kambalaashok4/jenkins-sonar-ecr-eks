@@ -13,7 +13,7 @@ pipeline {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
-                pip install -r requirements.txt
+                venv/bin/pip install -r requirements.txt
                 '''
             }
         }
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                pytest --junitxml=report.xml
+                venv/bin/pytest --junitxml=report.xml
                 '''
             }
         }
