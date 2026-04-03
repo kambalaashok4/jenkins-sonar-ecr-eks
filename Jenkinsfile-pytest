@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                venv/bin/pytest --junitxml=report.xml
+                venv/bin/pytest app/tests --junitxml=report.xml
                 '''
             }
         }
