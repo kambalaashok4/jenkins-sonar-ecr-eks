@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: git 'https://github.com/kambalaashok4/jenkins-sonar-ecr-eks.git'
+                git 'https://github.com/kambalaashok4/jenkins-sonar-ecr-eks.git'
             }
         }
 
