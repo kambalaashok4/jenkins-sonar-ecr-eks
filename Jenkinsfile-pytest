@@ -4,15 +4,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/kambalaashok4/jenkins-sonar-ecr-eks.git'
+                git branch: 'main', url: git 'https://github.com/kambalaashok4/jenkins-sonar-ecr-eks.git'
             }
         }
 
         stage('Setup Python') {
             steps {
-                bat '''
-                python -m venv venv
-                call venv\\Scripts\\activate
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
                 pip install -r requirements.txt
                 '''
             }
@@ -20,8 +20,8 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat '''
-                call venv\\Scripts\\activate
+                sh '''
+                . venv/bin/activate
                 pytest --junitxml=report.xml
                 '''
             }
